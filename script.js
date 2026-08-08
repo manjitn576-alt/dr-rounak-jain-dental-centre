@@ -1,50 +1,76 @@
 /* ==========================================================================
    Dr. Rounak Jain's Dental Centre - Interactive Scripts
-   WhatsApp Direct Redirect & Booking Functionality
+   WhatsApp Direct Redirect & Mobile Optimized Booking Functionality
    ========================================================================== */
 
 document.addEventListener('DOMContentLoaded', () => {
   // Clinic Details
   const CLINIC_WHATSAPP = '918812969559';
   
-  // Mobile Nav Toggle
+  // Mobile Nav Toggle & Backdrop
   const mobileToggle = document.getElementById('mobileToggle');
   const navLinks = document.getElementById('navLinks');
+  const navBackdrop = document.getElementById('navBackdrop');
 
-  if (mobileToggle && navLinks) {
-    mobileToggle.addEventListener('click', () => {
-      navLinks.classList.toggle('active');
+  function openMobileNav() {
+    if (navLinks) navLinks.classList.add('active');
+    if (navBackdrop) navBackdrop.classList.add('active');
+    document.body.style.overflow = 'hidden';
+    if (mobileToggle) {
       const icon = mobileToggle.querySelector('i');
       if (icon) {
-        icon.classList.toggle('fa-bars');
-        icon.classList.toggle('fa-xmark');
+        icon.classList.remove('fa-bars');
+        icon.classList.add('fa-xmark');
+      }
+    }
+  }
+
+  function closeMobileNav() {
+    if (navLinks) navLinks.classList.remove('active');
+    if (navBackdrop) navBackdrop.classList.remove('active');
+    document.body.style.overflow = 'auto';
+    if (mobileToggle) {
+      const icon = mobileToggle.querySelector('i');
+      if (icon) {
+        icon.classList.add('fa-bars');
+        icon.classList.remove('fa-xmark');
+      }
+    }
+  }
+
+  if (mobileToggle && navLinks) {
+    mobileToggle.addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (navLinks.classList.contains('active')) {
+        closeMobileNav();
+      } else {
+        openMobileNav();
       }
     });
 
-    // Close mobile nav when clicking a link
+    if (navBackdrop) {
+      navBackdrop.addEventListener('click', closeMobileNav);
+    }
+
+    // Close mobile nav when clicking a navigation link
     document.querySelectorAll('.nav-link').forEach(link => {
-      link.addEventListener('click', () => {
-        navLinks.classList.remove('active');
-        const icon = mobileToggle.querySelector('i');
-        if (icon) {
-          icon.classList.add('fa-bars');
-          icon.classList.remove('fa-xmark');
-        }
-      });
+      link.addEventListener('click', closeMobileNav);
     });
   }
 
   // Booking Modal Elements
   const bookingModal = document.getElementById('bookingModal');
-  const openModalBtns = document.querySelectorAll('.open-booking-modal');
   const closeModalBtn = document.getElementById('closeModal');
   const bookingForm = document.getElementById('bookingForm');
 
-  // Open Modal
-  openModalBtns.forEach(btn => {
-    btn.addEventListener('click', (e) => {
+  // Delegated Event Listener for Booking Modal Openers
+  document.addEventListener('click', (e) => {
+    const modalTrigger = e.target.closest('.open-booking-modal');
+    if (modalTrigger) {
       e.preventDefault();
-      const serviceName = btn.getAttribute('data-service') || 'General Consultation';
+      closeMobileNav(); // Close mobile nav if open
+      
+      const serviceName = modalTrigger.getAttribute('data-service') || 'General Dental Consultation';
       const serviceSelect = document.getElementById('bookingService');
       if (serviceSelect) {
         serviceSelect.value = serviceName;
@@ -53,10 +79,17 @@ document.addEventListener('DOMContentLoaded', () => {
         bookingModal.classList.add('active');
         document.body.style.overflow = 'hidden';
       }
-    });
+    }
   });
 
-  // Close Modal
+  // Close Modal Function
+  function closeModal() {
+    if (bookingModal) {
+      bookingModal.classList.remove('active');
+      document.body.style.overflow = 'auto';
+    }
+  }
+
   if (closeModalBtn) {
     closeModalBtn.addEventListener('click', closeModal);
   }
@@ -69,12 +102,13 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  function closeModal() {
-    if (bookingModal) {
-      bookingModal.classList.remove('active');
-      document.body.style.overflow = 'auto';
+  // Close active components on Escape key
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      closeModal();
+      closeMobileNav();
     }
-  }
+  });
 
   // Handle WhatsApp Appointment Form Submission
   if (bookingForm) {
@@ -114,14 +148,15 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // Quick Direct WhatsApp Buttons (Buttons with data-wa-text)
-  document.querySelectorAll('.direct-wa-btn').forEach(btn => {
-    btn.addEventListener('click', (e) => {
+  // Quick Direct WhatsApp Buttons (Delegated Event for all buttons)
+  document.addEventListener('click', (e) => {
+    const waTrigger = e.target.closest('.direct-wa-btn');
+    if (waTrigger) {
       e.preventDefault();
-      const customText = btn.getAttribute('data-wa-text') || "Hello Dr. Rounak Jain's Dental Centre, I would like to inquire about dental services.";
+      const customText = waTrigger.getAttribute('data-wa-text') || "Hello Dr. Rounak Jain's Dental Centre, I would like to inquire about dental services.";
       const waUrl = `https://wa.me/${CLINIC_WHATSAPP}?text=${encodeURIComponent(customText)}`;
       window.open(waUrl, '_blank');
-    });
+    }
   });
 
   // Smooth Scroll offset for fixed navbar
@@ -132,7 +167,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const targetElement = document.querySelector(targetId);
       if (targetElement) {
         e.preventDefault();
-        const headerOffset = 90;
+        const headerOffset = 80;
         const elementPosition = targetElement.getBoundingClientRect().top;
         const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
 
@@ -144,3 +179,4 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 });
+
